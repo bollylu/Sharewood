@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SharewoodAPI/SharewoodAPI.csproj" />
+  <Project Path="SharewoodQueryCli/SharewoodQueryCli.csproj" />
+</Solution>

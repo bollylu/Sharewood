@@ -1,0 +1,30 @@
+﻿namespace SharewoodAPI;
+
+public enum ESharewoodSubCategory {
+  None = 0,
+  VideoFilms = 9,
+  VideoSeries = 10,
+  VideoFilmsAnimation = 11,
+  VideoSeriesAnimation = 12,
+  VideoDocumentaires = 13,
+  VideoEmissionTV = 14,
+  VideoSpectacles = 15,
+  VideoSports = 16,
+  VideoKaraoke = 17,
+  AudioKaraoke = 18,
+  AudioMusique = 20,
+  AudioPodcast = 21,
+  AudioSamples = 22,
+  AudioEBooks = 23,
+  EbookBDs = 24,
+  EbookComics = 25,
+  EbookManga = 26,
+  EbookLivres = 27,
+  EbookPresse = 28,
+  ApplicationLinux = 29,
+  ApplicationWindows = 30,
+  ApplicationMac = 31,
+  ApplicationMobile = 34,
+  ApplicationGPS = 35,
+  JeuxLinux = 36
+}
