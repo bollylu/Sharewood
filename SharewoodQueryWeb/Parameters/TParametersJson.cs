@@ -2,9 +2,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
+using SharewoodQueryWeb.Parameters;
+
 namespace SharewoodQueryWeb;
 
-public class TParametersJson : IParameters {
+public class TParametersJson : ISettings {
   private readonly string _filePath;
   private readonly string _password;
   private const string SALT_BASE64 = "1q2w3e4r5t6y7u8i9o0p1q2w3e4r5t6y";
@@ -108,6 +110,22 @@ public class TParametersJson : IParameters {
   private byte[] DeriveKeyFromPassword(string password, byte[] salt) {
     return Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);
   }
+
+    public Task<TParametersData> GetSettingsAsync() {
+        throw new NotImplementedException();
+    }
+
+    public Task SetSettingsAsync(TParametersData data) {
+        throw new NotImplementedException();
+    }
+
+    public Task<TParametersData> ImportAsync(ISettings settings) {
+        throw new NotImplementedException();
+    }
+
+    public Task ExportAsync(ISettings settings) {
+        throw new NotImplementedException();
+    }
 }
 
 internal class TParametersJsonData {

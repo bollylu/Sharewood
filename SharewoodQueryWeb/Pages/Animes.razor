@@ -1,7 +1,7 @@
 ﻿@page "/Animes"
 @using SharewoodQueryWeb.Parameters
 
-@inject TSettingsService ApiKeyService
+@inject TSettingsLocalStorageService SettingsService
 
 <PageTitle>List of last 25 animes on Sharewood</PageTitle>
 
@@ -21,7 +21,7 @@
         <tr>
           <td>@TorrentItem.Name</td>
           <td>@TorrentItem.CreatedAt</td>
-          <td><a href="@TorrentItem.DownloadUrl" /></td>
+          <td><a href="@TorrentItem.DownloadUrl">Download</a></td>
         </tr>
       }
     </tbody>
@@ -39,18 +39,18 @@
   private string LastError = string.Empty;
 
   protected override async Task OnInitializedAsync() {
+    if (string.IsNullOrEmpty(Parameters.ApiKey) || string.IsNullOrEmpty(Parameters.SharewoodUrl)) {
+      Parameters = await SettingsService.GetSettingsAsync();
+      if (string.IsNullOrEmpty(Parameters.ApiKey) || string.IsNullOrEmpty(Parameters.SharewoodUrl)) {
+        LastError = "API Key or Sharewood URL is not set in the settings.";
+        return;
+      }
+    }
     await RefreshAsync();
   }
 
   private async Task RefreshAsync() {
     try {
-      if (string.IsNullOrEmpty(Parameters.ApiKey) || string.IsNullOrEmpty(Parameters.SharewoodUrl)) {
-        Parameters = await ApiKeyService.GetSettingsAsync();
-        if (string.IsNullOrEmpty(Parameters.ApiKey) || string.IsNullOrEmpty(Parameters.SharewoodUrl)) {
-          LastError = "API Key or Sharewood URL is not set in the settings.";
-          return;
-        }
-      }
 
       TSharewoodRequest requestLastAnimes = new TSharewoodRequest() {
         Category = ESharewoodCategory.Video,

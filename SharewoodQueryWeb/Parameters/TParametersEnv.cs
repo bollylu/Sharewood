@@ -1,17 +1,26 @@
-﻿namespace SharewoodQueryWeb;
+﻿
+using SharewoodQueryWeb.Parameters;
 
-public class TParametersEnv : IParameters {
-  public string ApiKey { get; set; } = string.Empty;
+namespace SharewoodQueryWeb;
+
+public class TParametersEnv : ISettings {
 
   public TParametersEnv() {
   }
 
-  public void Read() {
-    ApiKey = Environment.GetEnvironmentVariable("SHAREWOOD_API_KEY") ?? string.Empty;
+  public Task<TParametersData> GetSettingsAsync() {
+    throw new NotImplementedException();
   }
 
-  public void Write() {
-    Environment.SetEnvironmentVariable("SHAREWOOD_API_KEY", ApiKey);
+  public Task SetSettingsAsync(TParametersData data) {
+    throw new NotImplementedException();
   }
 
+  public Task<TParametersData> ImportAsync(ISettings settings) {
+    throw new NotImplementedException();
+  }
+
+  public Task ExportAsync(ISettings settings) {
+    throw new NotImplementedException();
+  }
 }

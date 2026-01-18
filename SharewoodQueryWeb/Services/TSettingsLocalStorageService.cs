@@ -4,16 +4,16 @@ using SharewoodQueryWeb.Parameters;
 
 namespace SharewoodQueryWeb.Services;
 
-public class TSettingsService {
+public class TSettingsLocalStorageService : ISettings {
 
   private const string KEY_SETTINGS = "shw-settings";
 
-  public string ApiKey { get; private set; } = string.Empty;
   private readonly TProtectedStorageService _storage;
 
-  public TSettingsService(TProtectedStorageService storage) {
+  public TSettingsLocalStorageService(TProtectedStorageService storage) {
     _storage = storage;
   }
+
   public async Task<TParametersData> GetSettingsAsync() {
     try {
       string Data = await _storage.GetFromLocalStorage(KEY_SETTINGS) ?? string.Empty;
@@ -24,8 +24,16 @@ public class TSettingsService {
     }
   }
 
-  public async Task SetParametersAsync(TParametersData data) {
+  public async Task SetSettingsAsync(TParametersData data) {
     string JsonData = JsonSerializer.Serialize(data);
     await _storage.SetToLocalStorage(KEY_SETTINGS, JsonData);
   }
+
+    public Task<TParametersData> ImportAsync(ISettings settings) {
+        throw new NotImplementedException();
+    }
+
+    public Task ExportAsync(ISettings settings) {
+        throw new NotImplementedException();
+    }
 }

@@ -11,6 +11,6 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddSingleton<TProtectedStorageService>();
-builder.Services.AddSingleton<TSettingsService>(sp => new TSettingsService(sp.GetRequiredService<TProtectedStorageService>()));
+builder.Services.AddSingleton<TSettingsLocalStorageService>(sp => new TSettingsLocalStorageService(sp.GetRequiredService<TProtectedStorageService>()));
 
 await builder.Build().RunAsync();
