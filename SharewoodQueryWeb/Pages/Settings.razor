@@ -1,0 +1,33 @@
+﻿@page "/Settings"
+@using System.ComponentModel.DataAnnotations
+@using SharewoodQueryWeb.Parameters
+
+@inject TSettingsService SettingsService
+
+<h3>Settings</h3>
+
+<EditForm Model="SettingsData" OnValidSubmit="SaveSettings" FormName="EditSettings">
+  <DataAnnotationsValidator />
+  <ValidationSummary />
+  <div class="mb-3">
+    <label for="urlInput" class="form-label">Sharewood Url</label>
+    <InputText id="urlInput" class="form-control" @bind-Value="SettingsData!.SharewoodUrl" />
+    <label for="apiKeyInput" class="form-label">Sharewood API key</label>
+    <InputText id="apiKeyInput" class="form-control" @bind-Value="SettingsData!.ApiKey" />
+  </div>
+  <button type="submit" class="btn btn-primary">Save Settings</button>
+</EditForm>
+
+@code {
+
+  public TParametersData SettingsData { get; set; } = new();
+
+  override protected async Task OnInitializedAsync() {
+    SettingsData = await SettingsService.GetSettingsAsync();
+  }
+
+  private async Task SaveSettings() {
+    await SettingsService.SetParametersAsync(SettingsData);
+  }
+
+}

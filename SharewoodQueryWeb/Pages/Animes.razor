@@ -1,0 +1,73 @@
+﻿@page "/Animes"
+@using SharewoodQueryWeb.Parameters
+
+@inject TSettingsService ApiKeyService
+
+<PageTitle>List of last 25 animes on Sharewood</PageTitle>
+
+<h1>Animes</h1>
+
+@if (ListOfAnimes.Any()) {
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Added</th>
+        <th>Download</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (TSharewoodTorrent TorrentItem in ListOfAnimes) {
+        <tr>
+          <td>@TorrentItem.Name</td>
+          <td>@TorrentItem.CreatedAt</td>
+          <td><a href="@TorrentItem.DownloadUrl" /></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+} else {
+  <p>No data found</p>
+  <p>@LastError</p>
+}
+
+<button class="btn btn-primary" @onclick="RefreshAsync">Refresh</button>
+
+@code {
+  private TSharewoodResponse ListOfAnimes = [];
+  private TParametersData Parameters = new TParametersData();
+  private string LastError = string.Empty;
+
+  protected override async Task OnInitializedAsync() {
+    await RefreshAsync();
+  }
+
+  private async Task RefreshAsync() {
+    try {
+      if (string.IsNullOrEmpty(Parameters.ApiKey) || string.IsNullOrEmpty(Parameters.SharewoodUrl)) {
+        Parameters = await ApiKeyService.GetSettingsAsync();
+        if (string.IsNullOrEmpty(Parameters.ApiKey) || string.IsNullOrEmpty(Parameters.SharewoodUrl)) {
+          LastError = "API Key or Sharewood URL is not set in the settings.";
+          return;
+        }
+      }
+
+      TSharewoodRequest requestLastAnimes = new TSharewoodRequest() {
+        Category = ESharewoodCategory.Video,
+        SubCategory = ESharewoodSubCategory.VideoSeriesAnimation,
+        Limit = 25
+      };
+
+      ListOfAnimes.Clear();
+      using (TSharewoodClient SharewoodClient = new(Parameters.ApiKey, Parameters.SharewoodUrl)) {
+        TSharewoodResponse? Result = await SharewoodClient.GetTorrentsAsync(requestLastAnimes);
+        if (Result is not null) {
+          ListOfAnimes.AddRange(Result);
+        }
+      }
+      LastError = string.Empty;
+    } catch (Exception ex) {
+      LastError = $"Error refreshing animes: {ex.Message}";
+    }
+  }
+}

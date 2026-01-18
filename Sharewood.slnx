@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="SharewoodAPI/SharewoodAPI.csproj" />
   <Project Path="SharewoodQueryCli/SharewoodQueryCli.csproj" />
+  <Project Path="SharewoodQueryWeb/SharewoodQueryWeb.csproj" Id="33832fef-e971-4cc3-8409-27104550c799" />
 </Solution>

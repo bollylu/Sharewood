@@ -4,7 +4,7 @@ namespace SharewoodAPI;
 
 public class TSharewoodClient : IDisposable {
   private readonly HttpClient _httpClient;
-  private ILogger Logger { get; init { field = value ?? new TConsoleLogger<TSharewoodClient>(); } } = new TConsoleLogger<TSharewoodClient>();
+  private ILogger Logger { get; init { field = value ?? new TTraceLogger<TSharewoodClient>(); } } = new TTraceLogger<TSharewoodClient>();
   public string ApiKey { get; set; }
   public string ServerAddress { get; set; }
 
@@ -13,13 +13,15 @@ public class TSharewoodClient : IDisposable {
 
   public string ServerUrl => $"https://{ServerAddress}/api/{ApiKey}";
 
-  public TSharewoodClient(string apiKey, string serverAddress, ILogger? logger = null) {
+  public TSharewoodClient(string apiKey, string serverAddress) {
     ApiKey = apiKey;
     ServerAddress = serverAddress;
-    HttpClientHandler handler = new();
-    handler.AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate;
+    //HttpClientHandler handler = new() {
+    //  AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
+    //};
 
-    _httpClient = new HttpClient(handler);
+    //_httpClient = new HttpClient(handler);
+    _httpClient = new HttpClient();
     _httpClient.DefaultRequestHeaders.Add("User-Agent", "Sharewood API Client/1.0");
     _httpClient.Timeout = TimeSpan.FromSeconds(30);
   }

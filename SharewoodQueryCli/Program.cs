@@ -13,7 +13,7 @@ if (string.IsNullOrEmpty(ParamApiKey)) {
   Environment.Exit(1);
 }
 
-using (TSharewoodClient Client = new TSharewoodClient(ParamApiKey, ParamServerAddress, Logger)) {
+using (TSharewoodClient Client = new TSharewoodClient(ParamApiKey, ParamServerAddress)) {
   Console.WriteLine("Fetching data from Sharewood...");
 
   TSharewoodRequest RequestLastAnimes = new TSharewoodRequest() {
