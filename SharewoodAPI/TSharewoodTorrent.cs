@@ -56,4 +56,6 @@ public class TSharewoodTorrent {
 
   [JsonPropertyName("is_downloaded")]
   public bool IsDownloaded { get; set; }
+
+  public bool IsSelected { get; set; } = false;
 }

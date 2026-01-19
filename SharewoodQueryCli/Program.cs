@@ -28,7 +28,7 @@ using (TSharewoodClient Client = new TSharewoodClient(ParamApiKey, ParamServerAd
     Limit = 10
   };
 
-  TSharewoodResponse? Result = await Client.GetTorrentsAsync(RequestLastAnimes);
+  TSharewoodResponse? Result = await Client.GetLastTorrentsAsync(RequestLastAnimes);
   if (Result is null) {
     Console.WriteLine("No result");
     return;

@@ -3,10 +3,10 @@
 namespace SharewoodQueryWeb;
 
 public interface ISettings {
-  Task<TParametersData> GetSettingsAsync();
-  Task SetSettingsAsync(TParametersData data);
+  Task<TSettingsData> GetSettingsAsync();
+  Task SetSettingsAsync(TSettingsData data);
 
-  Task<TParametersData> ImportAsync(ISettings settings);
+  Task<TSettingsData> ImportAsync(ISettings settings);
   Task ExportAsync(ISettings settings);
 
 }

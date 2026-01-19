@@ -14,22 +14,22 @@ public class TSettingsLocalStorageService : ISettings {
     _storage = storage;
   }
 
-  public async Task<TParametersData> GetSettingsAsync() {
+  public async Task<TSettingsData> GetSettingsAsync() {
     try {
       string Data = await _storage.GetFromLocalStorage(KEY_SETTINGS) ?? string.Empty;
-      TParametersData Result = JsonSerializer.Deserialize<TParametersData>(Data) ?? new TParametersData();
+      TSettingsData Result = JsonSerializer.Deserialize<TSettingsData>(Data) ?? new TSettingsData();
       return Result;
     } catch {
-      return new TParametersData();
+      return new TSettingsData();
     }
   }
 
-  public async Task SetSettingsAsync(TParametersData data) {
+  public async Task SetSettingsAsync(TSettingsData data) {
     string JsonData = JsonSerializer.Serialize(data);
     await _storage.SetToLocalStorage(KEY_SETTINGS, JsonData);
   }
 
-    public Task<TParametersData> ImportAsync(ISettings settings) {
+    public Task<TSettingsData> ImportAsync(ISettings settings) {
         throw new NotImplementedException();
     }
 
