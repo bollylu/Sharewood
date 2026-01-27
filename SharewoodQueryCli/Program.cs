@@ -19,13 +19,13 @@ using (TSharewoodClient Client = new TSharewoodClient(ParamApiKey, ParamServerAd
   TSharewoodRequest RequestLastAnimes = new TSharewoodRequest() {
     Category = ESharewoodCategory.Video,
     SubCategory = ESharewoodSubCategory.VideoSeriesAnimation,
-    Limit = 10
+    TorrentsLimit = 10
   };
 
   TSharewoodRequest RequestLastEBooks = new TSharewoodRequest() {
-    Category = ESharewoodCategory.EBooks,
-    SubCategory = ESharewoodSubCategory.EbookLivres,
-    Limit = 10
+    Category = ESharewoodCategory.Ebooks,
+    SubCategory = ESharewoodSubCategory.EbooksLivres,
+    TorrentsLimit = 10
   };
 
   TSharewoodResponse? Result = await Client.GetLastTorrentsAsync(RequestLastAnimes);

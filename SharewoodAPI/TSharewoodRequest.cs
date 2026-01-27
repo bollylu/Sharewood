@@ -10,7 +10,7 @@ public class TSharewoodRequest {
   public ESharewoodCategory Category { get; set; } = ESharewoodCategory.None;
   public ESharewoodSubCategory SubCategory { get; set; } = ESharewoodSubCategory.None;
   public EResponseFormat Format { get; set; } = EResponseFormat.Json;
-  public int Limit {
+  public int TorrentsLimit {
     get { return field; }
     set { field = value.WithinLimits(MIN_TORRENTS_LIMITS, MAX_TORRENTS_LIMITS); }
   } = DEFAULT_TORRENTS_LIMITS;
@@ -28,7 +28,7 @@ public class TSharewoodRequest {
     if (SubCategory != ESharewoodSubCategory.None) {
       parameters.Add($"subcategory={(int)SubCategory}");
     }
-    parameters.Add($"limit={Limit}");
+    parameters.Add($"limit={TorrentsLimit}");
     if (Format == EResponseFormat.Xml) {
       parameters.Add("format=xml");
     }

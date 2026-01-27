@@ -1,0 +1,70 @@
+@using SharewoodQueryWeb.Parameters
+
+@inject IJSRuntime JS
+
+@if (Torrents.Any()) {
+  <h2>Found @Torrents.Count() torrent(s)</h2>
+  <table class="table table-primary">
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Name</th>
+        <th>DL</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (TSharewoodTorrent TorrentItem in Torrents.OrderBy(t => t.Name)) {
+        <tr>
+          <td><InputCheckbox @bind-Value="TorrentItem.IsSelected"/></td>
+          <td>@TorrentItem.Name</td>
+          <td><a href="@TorrentItem.DownloadUrl" title="Download"><i class="bi bi-download"></i></a></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (Torrents.Any(t => t.IsSelected)) {
+    <button class="btn btn-primary" @disabled="IsDownloading">Download @Torrents.Count(t => t.IsSelected) torrent(s)</button>
+  } else {
+    <button class="btn btn-primary" disabled>Download 0 torrent(s)</button>
+  }
+  <p>@if (!string.IsNullOrEmpty(Message)) { @Message }</p>
+
+} else {
+  <p>No data found</p>
+  <p>@if (!string.IsNullOrEmpty(Message)) { @Message }</p>
+}
+
+@code {
+  [Parameter]
+  public List<TSharewoodTorrent> Torrents { get; set; } = [];
+
+  [Parameter]
+  public string Message { get; set; } = string.Empty;
+
+  private bool IsDownloading { get; set; } = false;
+
+  // private async Task DownloadTorrents() {
+  //   IsDownloading = true;
+  //   int Counter = 0;
+
+  //   try {
+  //     foreach (TSharewoodTorrent TorrentItem in Torrents.Where(t => t.IsSelected)) {
+  //       try {
+  //         string fileName = TorrentItem.Name;
+  //         await JS.InvokeVoidAsync("downloadFile", fileName);
+  //         Counter++;
+  //         await Task.Delay(500);
+  //       } catch (Exception ex) {
+  //         System.Diagnostics.Debug.WriteLine($"Error downloading torrent: {ex.Message}");
+  //       }
+  //     }
+  //     Message = $"Started download of {Counter} torrent(s).";
+  //   } catch (Exception ex) {
+  //     Message = $"Error during download: {ex.Message}";
+  //   } finally {
+  //     IsDownloading = false;
+  //     StateHasChanged();
+  //   }
+  // }
+}

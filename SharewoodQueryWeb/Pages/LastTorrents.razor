@@ -12,14 +12,14 @@
   <ValidationSummary />
   <div class="mb-3">
     <label for="TorrentsLimit" class="form-label fw-bold">Number of torrents to retrieve</label>
-    <InputNumber id="TorrentsLimit" class="form-control" @bind-Value="Request.Limit" />
+    <InputNumber id="TorrentsLimit" class="form-control" @bind-Value="Request.TorrentsLimit" />
 
-    <label for="defaultCategoryInput" class="form-label fw-bold">Default Category</label>
+    <label for="defaultCategoryInput" class="form-label fw-bold">Category</label>
     <select id="defaultCategoryInput"
             class="form-select"
             @onchange="onCategorySelected">
       @foreach (ESharewoodCategory category in Enum.GetValues<ESharewoodCategory>()) {
-        @if (category == SettingsData!.DefaultCategory) {
+        @if (category == Request.Category) {
           <option value="@category" selected>@category.ToString()</option>
         } else {
           <option value="@category">@category.ToString()</option>
@@ -28,14 +28,14 @@
 
     </select>
 
-    <label for="defaultSubCategoryInput" class="form-label fw-bold">Default SubCategory</label>
+    <label for="defaultSubCategoryInput" class="form-label fw-bold">Sub Category</label>
     <select id="defaultSubCategoryInput" class="form-select" @onchange="onSubCategorySelected">
       <option value="@ESharewoodSubCategory.None.ToString()">None</option>
-      @foreach (ESharewoodSubCategory subcategory in SubCategoriesForCategory(SettingsData!.DefaultCategory)) {
-        if (subcategory == SettingsData!.DefaultSubCategory) {
-          <option value="@subcategory" selected>@subcategory.ToString().After(SettingsData.DefaultCategory.ToString())</option>
+      @foreach (ESharewoodSubCategory subcategory in Request.Category.GetSubCategories()) {
+        if (subcategory == Request.SubCategory) {
+          <option value="@subcategory" selected>@subcategory.ToString().After(Request.Category.ToString())</option>
         } else {
-          <option value="@subcategory">@subcategory.ToString().After(SettingsData.DefaultCategory.ToString())</option>
+          <option value="@subcategory">@subcategory.ToString().After(Request.Category.ToString())</option>
         }
       }
     </select>
@@ -43,49 +43,27 @@
   </div>
 </EditForm>
 
-@if (Torrents.Any()) {
-  <table class="table table-primary">
-    <thead>
-      <tr>
-        <th>Select</th>
-        <th>Name</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach (TSharewoodTorrent TorrentItem in Torrents.OrderBy(t => t.Name)) {
-        <tr>
-          <td><InputCheckbox @bind-value="TorrentItem.IsSelected" /></td>
-          <td>@TorrentItem.Name</td>
-        </tr>
-      }
-    </tbody>
-  </table>
+<DisplayTorrents Torrents="Torrents" Message="@Message" />
 
-  <button class="btn btn-primary" @bind="Torrents" @onclick="DownloadTorrents" @disabled="@(!Torrents.Any(t => t.IsSelected))">Download @Torrents.Count(t => t.IsSelected) torrent(s)</button>
-
-} else {
-  <p>No data found</p>
-  <p>@LastError</p>
-}
-
-<p />
 <button class="btn btn-primary" @onclick="RefreshAsync">Refresh</button>
 
 @code {
   private TSharewoodRequest Request = new TSharewoodRequest();
   private TSharewoodResponse Torrents = [];
   private TSettingsData SettingsData = new TSettingsData();
-  private string LastError = string.Empty;
-  private IEnumerable<ESharewoodSubCategory> SubCategories { get; set; } = Enumerable.Empty<ESharewoodSubCategory>();
+  private string Message = string.Empty;
 
   protected override async Task OnInitializedAsync() {
     if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
       SettingsData = await SettingsService.GetSettingsAsync();
       if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
-        LastError = "API Key or Sharewood URL is not set in the settings.";
+        Message = "API Key or Sharewood URL is not set in the settings.";
         return;
       }
     }
+    Request.Category = SettingsData.DefaultCategory;
+    Request.SubCategory = SettingsData.DefaultSubCategory;
+    Request.TorrentsLimit = SettingsData.TorrentsLimit;
     await RefreshAsync();
   }
 
@@ -99,33 +77,18 @@
           Torrents.AddRange(Result);
         }
       }
-      LastError = string.Empty;
+      Message = string.Empty;
     } catch (Exception ex) {
-      LastError = $"Error refreshing animes: {ex.Message}";
+      Message = $"Error refreshing animes: {ex.Message}";
     }
-  }
-
-  private async Task DownloadTorrents() {
-    foreach (TSharewoodTorrent TorrentItem in Torrents.Where(t => t.IsSelected)) {
-      await JS.InvokeVoidAsync("open", TorrentItem.DownloadUrl, "_blank");
-    }
-  }
-
-  private IEnumerable<ESharewoodSubCategory> SubCategoriesForCategory(ESharewoodCategory category) {
-    return Enum.GetValues<ESharewoodSubCategory>()
-      .Where(subcategory => subcategory.ToString().StartsWith(category.ToString()));
+    StateHasChanged();
   }
 
   private void onCategorySelected(ChangeEventArgs e) {
     if (e.Value is string Category) {
       Request.Category = Enum.Parse<ESharewoodCategory>(Category);
-      SubCategories = SubCategoriesForCategory(Request.Category);
-      if (SubCategories.Any()) {
-        Request.SubCategory = SubCategories.First();
-      } else {
-        Request.SubCategory = default!;
-      }
-
+      Request.SubCategory = ESharewoodSubCategory.None;
+      Torrents.Clear();
       StateHasChanged();
     }
   }
@@ -133,7 +96,9 @@
   private void onSubCategorySelected(ChangeEventArgs e) {
     if (e.Value is string subCategory) {
       Request.SubCategory = Enum.Parse<ESharewoodSubCategory>(subCategory);
+      Torrents.Clear();
+      StateHasChanged();
     }
-    ;
+
   }
 }
