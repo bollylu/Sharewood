@@ -1,0 +1,114 @@
+﻿@page "/Settings"
+@using System.ComponentModel.DataAnnotations
+@rendermode InteractiveWebAssembly
+
+@inject TSettingsLocalStorage SettingsService
+
+<h3>Settings</h3>
+
+<EditForm Model="SettingsData" OnValidSubmit="SaveSettings" FormName="EditSettings">
+  <DataAnnotationsValidator />
+  <ValidationSummary />
+  <div class="mb-3">
+
+    <label for="urlInput" class="form-label fw-bold">Sharewood Url</label>
+    <InputText id="urlInput" class="form-control" @bind-Value="SettingsData!.SharewoodUrl" />
+
+    <label for="apiKeyInput" class="form-label fw-bold">Sharewood API key</label>
+    <InputText id="apiKeyInput" class="form-control" @bind-Value="SettingsData!.ApiKey" />
+
+    <label for="limitInput" class="form-label fw-bold">Torrents Limit</label>
+    <InputNumber id="limitInput" class="form-control" @bind-Value="SettingsData!.TorrentsLimit" />
+
+    <label for="autoRefreshInput" class="form-label fw-bold">Auto Refresh</label>
+    <InputCheckbox id="autoRefreshInput" class="form-check-input" @bind-Value="SettingsData!.AutoRefresh" />
+    <br />
+
+    <label for="refreshDelayInput" class="form-label fw-bold">Refresh Delay (seconds)</label>
+    <InputNumber id="refreshDelayInput" class="form-control" @bind-Value="SettingsData!.RefreshIntervalInSec" />
+
+    <label for="defaultCategoryInput" class="form-label fw-bold">Default Category</label>
+    <select id="defaultCategoryInput"
+            class="form-select"
+            @onchange="onCategorySelected">
+      @foreach (ESharewoodCategory category in Enum.GetValues<ESharewoodCategory>()) {
+        <option value="@category">@category.ToString()</option>
+      }
+    </select>
+
+    <label for="defaultSubCategoryInput" class="form-label fw-bold">Default SubCategory</label>
+    <select id="defaultSubCategoryInput" class="form-select" @onchange="onSubCategorySelected">
+      <option value="@ESharewoodSubCategory.None.ToString()">None</option>
+      @foreach (ESharewoodSubCategory subcategory in SubCategoriesForCategory(SettingsData!.DefaultCategory)) {
+        <option value="@subcategory">@subcategory.ToString().After(SettingsData.DefaultCategory.ToString())</option>
+      }
+    </select>
+
+  </div>
+  <button type="submit" class="btn btn-primary">Save Settings</button>
+</EditForm>
+
+<p>@if (!string.IsNullOrEmpty(Message)) {
+@Message
+}
+</p>
+
+@code {
+
+  public string Message { get; set; } = string.Empty;
+  public TSettingsData SettingsData { get; set; } = new();
+  private TSettingsData? OriginalSettingsData;
+  public bool IsDataDirty => OriginalSettingsData is not null && !SettingsData.Equals(OriginalSettingsData);
+
+  private IEnumerable<ESharewoodSubCategory> SubCategories { get; set; } = Enumerable.Empty<ESharewoodSubCategory>();
+
+  protected override async Task OnInitializedAsync() {
+    SettingsData = await SettingsService.ReadAsync();
+    OriginalSettingsData = new TSettingsData(SettingsData);
+    Message = "Data loaded.";
+  }
+
+  // protected override async Task OnAfterRenderAsync(bool firstRender) {
+  //   if (firstRender) {
+  //     SettingsData = await SettingsService.GetSettingsAsync();
+  //     OriginalSettingsData = new TSettingsData(SettingsData);
+  //     StateHasChanged();
+  //   }
+  // }
+
+  private async Task SaveSettings() {
+    if (IsDataDirty) {
+      await SettingsService.SaveAsync(SettingsData);
+      OriginalSettingsData = new TSettingsData(SettingsData);
+      Message = "Settings saved.";
+    } else {
+      Message = "No changes to save.";
+    }
+  }
+
+  private IEnumerable<ESharewoodSubCategory> SubCategoriesForCategory(ESharewoodCategory category) {
+    return Enum.GetValues<ESharewoodSubCategory>()
+      .Where(subcategory => subcategory.ToString().StartsWith(category.ToString()));
+  }
+
+  private void onCategorySelected(ChangeEventArgs e) {
+    if (e.Value is string Category) {
+      SettingsData.DefaultCategory = Enum.Parse<ESharewoodCategory>(Category);
+      SubCategories = SubCategoriesForCategory(SettingsData.DefaultCategory);
+      if (SubCategories.Any()) {
+        SettingsData.DefaultSubCategory = SubCategories.First();
+      } else {
+        SettingsData.DefaultSubCategory = default!;
+      }
+
+      StateHasChanged();
+    }
+  }
+
+  private void onSubCategorySelected(ChangeEventArgs e) {
+    if (e.Value is string subCategory) {
+      SettingsData.DefaultSubCategory = Enum.Parse<ESharewoodSubCategory>(subCategory);
+    };
+  }
+
+}

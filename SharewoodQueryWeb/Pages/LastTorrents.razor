@@ -1,6 +1,6 @@
 ﻿@page "/LastTorrents"
 
-@inject TSettingsLocalStorageService SettingsService
+@inject TSettingsLocalStorage Data
 @inject IJSRuntime JS
 
 <PageTitle>List of last 25 torrents on Sharewood</PageTitle>
@@ -50,20 +50,19 @@
 @code {
   private TSharewoodRequest Request = new TSharewoodRequest();
   private TSharewoodResponse Torrents = [];
-  private TSettingsData SettingsData = new TSettingsData();
   private string Message = string.Empty;
 
   protected override async Task OnInitializedAsync() {
-    if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
-      SettingsData = await SettingsService.GetSettingsAsync();
-      if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
+    if (string.IsNullOrEmpty(Data.ApiKey) || string.IsNullOrEmpty(Data.SharewoodUrl)) {
+      await Data.ReadAsync();
+      if (string.IsNullOrEmpty(Data.ApiKey) || string.IsNullOrEmpty(Data.SharewoodUrl)) {
         Message = "API Key or Sharewood URL is not set in the settings.";
         return;
       }
     }
-    Request.Category = SettingsData.DefaultCategory;
-    Request.SubCategory = SettingsData.DefaultSubCategory;
-    Request.TorrentsLimit = SettingsData.TorrentsLimit;
+    Request.Category = Data.DefaultCategory;
+    Request.SubCategory = Data.DefaultSubCategory;
+    Request.TorrentsLimit = Data.TorrentsLimit;
     await RefreshAsync();
   }
 
@@ -71,7 +70,7 @@
     try {
       Torrents.Clear();
 
-      using (TSharewoodClient SharewoodClient = new(SettingsData.ApiKey, SettingsData.SharewoodUrl)) {
+      using (TSharewoodClient SharewoodClient = new(Data.ApiKey, Data.SharewoodUrl)) {
         TSharewoodResponse? Result = await SharewoodClient.GetLastTorrentsAsync(Request);
         if (Result is not null) {
           Torrents.AddRange(Result);

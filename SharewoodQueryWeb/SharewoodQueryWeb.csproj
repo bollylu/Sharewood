@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SharewoodAPI\SharewoodAPI.csproj" />
+    <ProjectReference Include="..\SharewoodQueryLib\SharewoodQueryLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

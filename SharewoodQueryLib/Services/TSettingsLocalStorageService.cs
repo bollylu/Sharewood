@@ -1,10 +1,8 @@
 ﻿using System.Text.Json;
 
-using SharewoodQueryWeb.Parameters;
+namespace SharewoodQueryLib;
 
-namespace SharewoodQueryWeb.Services;
-
-public class TSettingsLocalStorageService : ISettings {
+public class TSettingsLocalStorageService {
 
   private const string KEY_SETTINGS = "shw-settings";
 
@@ -14,7 +12,7 @@ public class TSettingsLocalStorageService : ISettings {
     _storage = storage;
   }
 
-  public async Task<TSettingsData> GetSettingsAsync() {
+  public async Task<TSettingsData> ReadAsync() {
     try {
       string Data = await _storage.GetFromLocalStorage(KEY_SETTINGS) ?? string.Empty;
       TSettingsData Result = JsonSerializer.Deserialize<TSettingsData>(Data) ?? new TSettingsData();
@@ -24,7 +22,7 @@ public class TSettingsLocalStorageService : ISettings {
     }
   }
 
-  public async Task SetSettingsAsync(TSettingsData data) {
+  public async Task SaveAsync(TSettingsData data) {
     string JsonData = JsonSerializer.Serialize(data);
     await _storage.SetToLocalStorage(KEY_SETTINGS, JsonData);
   }

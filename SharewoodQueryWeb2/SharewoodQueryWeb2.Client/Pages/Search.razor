@@ -1,7 +1,8 @@
 ﻿@page "/Search"
-@* @using SharewoodQueryLib *@
 
-@inject TSettingsLocalStorage SettingsData
+@rendermode InteractiveWebAssembly
+
+@inject TSettingsLocalStorage SettingsService
 @inject IJSRuntime JS
 
 <PageTitle>Search some torrents on Sharewood</PageTitle>
@@ -58,11 +59,12 @@
 @code {
   private TSharewoodRequest Request = new TSharewoodRequest();
   private TSharewoodResponse Torrents = [];
+  private TSettingsData SettingsData = new TSettingsData();
   private string Message = string.Empty;
 
   protected override async Task OnInitializedAsync() {
     if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
-      await SettingsData.ReadAsync();
+      SettingsData = await SettingsService.ReadAsync();
       if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
         Message = "API Key or Sharewood URL is not set in the settings.";
         return;

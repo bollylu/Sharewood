@@ -1,12 +1,12 @@
-﻿@page "/Search"
-@* @using SharewoodQueryLib *@
+﻿@page "/LastTorrents"
+@rendermode InteractiveWebAssembly
 
-@inject TSettingsLocalStorage SettingsData
+@inject TSettingsLocalStorage SettingsService
 @inject IJSRuntime JS
 
-<PageTitle>Search some torrents on Sharewood</PageTitle>
+<PageTitle>List of last 25 torrents on Sharewood</PageTitle>
 
-<h1>Search</h1>
+<h1>Last torrents (@DateTime.Now.ToDMYHMS())</h1>
 
 <EditForm Model="@Request">
   <DataAnnotationsValidator />
@@ -31,22 +31,15 @@
 
     <label for="defaultSubCategoryInput" class="form-label fw-bold">Sub Category</label>
     <select id="defaultSubCategoryInput" class="form-select" @onchange="onSubCategorySelected">
-      @if (Request.Category == ESharewoodCategory.None) {
-        <option value="@ESharewoodSubCategory.None.ToString()" selected>None</option>
-      } else {
-        <option value="@ESharewoodSubCategory.None.ToString()">None</option>
-        @foreach (ESharewoodSubCategory subcategory in Request.Category.GetSubCategories()) {
-          if (subcategory == Request.SubCategory) {
-            <option value="@subcategory" selected>@subcategory.ToString().After(Request.Category.ToString())</option>
-          } else {
-            <option value="@subcategory">@subcategory.ToString().After(Request.Category.ToString())</option>
-          }
+      <option value="@ESharewoodSubCategory.None.ToString()">None</option>
+      @foreach (ESharewoodSubCategory subcategory in Request.Category.GetSubCategories()) {
+        if (subcategory == Request.SubCategory) {
+          <option value="@subcategory" selected>@subcategory.ToString().After(Request.Category.ToString())</option>
+        } else {
+          <option value="@subcategory">@subcategory.ToString().After(Request.Category.ToString())</option>
         }
       }
     </select>
-
-    <label for="searchTermInput" class="form-label fw-bold">Title</label>
-    <InputText id="searchTermInput" class="form-control" @bind-Value="Request.NameFilter" />
 
   </div>
 </EditForm>
@@ -58,11 +51,12 @@
 @code {
   private TSharewoodRequest Request = new TSharewoodRequest();
   private TSharewoodResponse Torrents = [];
+  private TSettingsData SettingsData = new TSettingsData();
   private string Message = string.Empty;
 
   protected override async Task OnInitializedAsync() {
     if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
-      await SettingsData.ReadAsync();
+      SettingsData = await SettingsService.ReadAsync();
       if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
         Message = "API Key or Sharewood URL is not set in the settings.";
         return;
@@ -79,7 +73,7 @@
       Torrents.Clear();
 
       using (TSharewoodClient SharewoodClient = new(SettingsData.ApiKey, SettingsData.SharewoodUrl)) {
-        TSharewoodResponse? Result = await SharewoodClient.SearchTorrentsAsync(Request);
+        TSharewoodResponse? Result = await SharewoodClient.GetLastTorrentsAsync(Request);
         if (Result is not null) {
           Torrents.AddRange(Result);
         }
@@ -88,6 +82,7 @@
     } catch (Exception ex) {
       Message = $"Error refreshing animes: {ex.Message}";
     }
+    StateHasChanged();
   }
 
   private void onCategorySelected(ChangeEventArgs e) {
@@ -105,6 +100,6 @@
       Torrents.Clear();
       StateHasChanged();
     }
-    
+
   }
 }

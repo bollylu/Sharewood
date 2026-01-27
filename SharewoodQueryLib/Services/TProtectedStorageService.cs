@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace SharewoodQueryWeb.Services;
+namespace SharewoodQueryLib;
 
 public class TProtectedStorageService(IJSRuntime jsRuntime) {
 

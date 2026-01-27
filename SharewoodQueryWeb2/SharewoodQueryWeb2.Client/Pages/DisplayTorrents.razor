@@ -1,0 +1,80 @@
+@rendermode InteractiveWebAssembly
+
+@if (Torrents.Any()) {
+  <h2>Found @Torrents.Count() torrent(s)</h2>
+  <table class="table table-primary">
+    <thead>
+      <tr>
+        <th width="50">DL</th>
+        <th width="200" @onclick="SortByName"><i class="@(SortOrder == ESortOrder.NameAsc ? "bi bi-arrow-up" : "bi bi-arrow-down")"></i> Name</th>
+        <th width="150" @onclick="SortByDate"><i class="@(SortOrder == ESortOrder.DateAsc ? "bi bi-arrow-up" : "bi bi-arrow-down")"></i> Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (TSharewoodTorrent TorrentItem in SortedTorrent) {
+        <tr>
+          <td width="50"><a href="@TorrentItem.DownloadUrl" title="Download"><i class="bi bi-download"></i></a></td>
+          <td width="200">@TorrentItem.Name</td>
+          <td width="150">@DisplayDateTime(TorrentItem.CreatedAt)</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <p>@if (!string.IsNullOrEmpty(Message)) {
+  @Message
+}
+</p>
+
+} else {
+  <p>No data found</p>
+  <p>@if (!string.IsNullOrEmpty(Message)) {
+  @Message
+}
+</p>
+}
+
+@code {
+  [Parameter]
+  public List<TSharewoodTorrent> Torrents { get; set; } = [];
+
+  public ESortOrder SortOrder { get; set; } = ESortOrder.NameAsc;
+  public List<TSharewoodTorrent> SortedTorrent => SortOrder switch {
+    ESortOrder.NameAsc => Torrents.OrderBy(t => t.Name).ToList(),
+    ESortOrder.NameDesc => Torrents.OrderByDescending(t => t.Name).ToList(),
+    ESortOrder.DateAsc => Torrents.OrderBy(t => t.CreatedAt).ToList(),
+    ESortOrder.DateDesc => Torrents.OrderByDescending(t => t.CreatedAt).ToList(),
+    _ => Torrents
+  };
+
+  [Parameter]
+  public string Message { get; set; } = string.Empty;
+
+  private bool IsDownloading { get; set; } = false;
+  private void SortByName(MouseEventArgs args) {
+    if (SortOrder == ESortOrder.NameAsc) {
+      SortOrder = ESortOrder.NameDesc;
+    } else {
+      SortOrder = ESortOrder.NameAsc;
+    }
+  }
+  private void SortByDate(MouseEventArgs args) {
+    if (SortOrder == ESortOrder.DateAsc) {
+      SortOrder = ESortOrder.DateDesc;
+    } else {
+      SortOrder = ESortOrder.DateAsc;
+    }
+  }
+
+  private string DisplayDateTime(string value) {
+    if (DateTime.TryParse(value, out DateTime parsedDateTime)) {
+      if (parsedDateTime.Date == DateTime.Today.Date) {
+        return parsedDateTime.ToLocalTime().ToString("t");
+      } else {
+        return parsedDateTime.ToLocalTime().ToString("d");
+      }
+    } else {
+      return value;
+    }
+  }
+}
