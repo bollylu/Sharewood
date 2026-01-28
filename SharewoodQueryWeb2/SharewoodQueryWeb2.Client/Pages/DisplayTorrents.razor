@@ -20,19 +20,14 @@
       }
     </tbody>
   </table>
-
-  <p>@if (!string.IsNullOrEmpty(Message)) {
-  @Message
-}
-</p>
-
 } else {
   <p>No data found</p>
-  <p>@if (!string.IsNullOrEmpty(Message)) {
-  @Message
 }
+<p>
+  @if (!string.IsNullOrEmpty(Message)) {
+    @Message
+  }
 </p>
-}
 
 @code {
   [Parameter]

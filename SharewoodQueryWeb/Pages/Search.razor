@@ -1,7 +1,7 @@
 ﻿@page "/Search"
-@* @using SharewoodQueryLib *@
+@using SharewoodQueryLib
 
-@inject TSettingsLocalStorage SettingsData
+@inject TSettingsInLocalStorage Storage
 @inject IJSRuntime JS
 
 <PageTitle>Search some torrents on Sharewood</PageTitle>
@@ -59,14 +59,18 @@
   private TSharewoodRequest Request = new TSharewoodRequest();
   private TSharewoodResponse Torrents = [];
   private string Message = string.Empty;
+  private ISettings SettingsData = new TSettings();
 
   protected override async Task OnInitializedAsync() {
+    ISettings? LoadedSettings = await Storage.ReadAsync();
+    if (LoadedSettings is null) {
+      Message = "Settings not found. Please set API Key and Sharewood URL in the settings.";
+      return;
+    }
+    SettingsData = new TSettings(LoadedSettings);
     if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
-      await SettingsData.ReadAsync();
-      if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
-        Message = "API Key or Sharewood URL is not set in the settings.";
-        return;
-      }
+      Message = "API Key or Sharewood URL is not set in the settings.";
+      return;
     }
     Request.Category = SettingsData.DefaultCategory;
     Request.SubCategory = SettingsData.DefaultSubCategory;
@@ -86,8 +90,9 @@
       }
       Message = string.Empty;
     } catch (Exception ex) {
-      Message = $"Error refreshing animes: {ex.Message}";
+      Message = $"Error refreshing torrents : {ex.Message}";
     }
+    StateHasChanged();
   }
 
   private void onCategorySelected(ChangeEventArgs e) {
@@ -105,6 +110,6 @@
       Torrents.Clear();
       StateHasChanged();
     }
-    
+
   }
 }

@@ -1,6 +1,6 @@
 ﻿@page "/LastTorrents"
 
-@inject TSettingsLocalStorage Data
+@inject TSettingsInLocalStorage Storage
 @inject IJSRuntime JS
 
 <PageTitle>List of last 25 torrents on Sharewood</PageTitle>
@@ -53,24 +53,32 @@
   private string Message = string.Empty;
 
   protected override async Task OnInitializedAsync() {
-    if (string.IsNullOrEmpty(Data.ApiKey) || string.IsNullOrEmpty(Data.SharewoodUrl)) {
-      await Data.ReadAsync();
-      if (string.IsNullOrEmpty(Data.ApiKey) || string.IsNullOrEmpty(Data.SharewoodUrl)) {
-        Message = "API Key or Sharewood URL is not set in the settings.";
-        return;
-      }
+    ISettings? SettingsData = await Storage.ReadAsync();
+    if (SettingsData is null) {
+      Message = "Settings not found. Please set API Key and Sharewood URL in the settings.";
+      return;
     }
-    Request.Category = Data.DefaultCategory;
-    Request.SubCategory = Data.DefaultSubCategory;
-    Request.TorrentsLimit = Data.TorrentsLimit;
+    if (string.IsNullOrEmpty(SettingsData.ApiKey) || string.IsNullOrEmpty(SettingsData.SharewoodUrl)) {
+      Message = "API Key or Sharewood URL is not set in the settings.";
+      return;
+    }
+    Request.Category = SettingsData.DefaultCategory;
+    Request.SubCategory = SettingsData.DefaultSubCategory;
+    Request.TorrentsLimit = SettingsData.TorrentsLimit;
     await RefreshAsync();
   }
 
   private async Task RefreshAsync() {
     try {
+      ISettings? SettingsData = await Storage.ReadAsync();
+      if (SettingsData is null) {
+        Message = "Settings not found. Please set API Key and Sharewood URL in the settings.";
+        return;
+      }
+
       Torrents.Clear();
 
-      using (TSharewoodClient SharewoodClient = new(Data.ApiKey, Data.SharewoodUrl)) {
+      using (TSharewoodClient SharewoodClient = new(SettingsData.ApiKey, SettingsData.SharewoodUrl)) {
         TSharewoodResponse? Result = await SharewoodClient.GetLastTorrentsAsync(Request);
         if (Result is not null) {
           Torrents.AddRange(Result);

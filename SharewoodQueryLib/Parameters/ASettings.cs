@@ -47,9 +47,5 @@ public abstract class ASettings :ISettings, IEquatable<ISettings> {
       && DefaultCategory == other.DefaultCategory
       && DefaultSubCategory == other.DefaultSubCategory;
   }
-
-    public abstract Task ReadAsync();
-    public abstract Task SaveAsync();
-    public abstract Task ImportAsync(ISettings settings);
-    public abstract Task ExportAsync(ISettings settings);
+    
 }

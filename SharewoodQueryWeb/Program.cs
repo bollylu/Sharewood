@@ -10,6 +10,6 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped<TProtectedStorageService>();
-builder.Services.AddScoped<TSettingsLocalStorage>(sp => new TSettingsLocalStorage(sp.GetRequiredService<TProtectedStorageService>()));
+builder.Services.AddScoped<TSettingsInLocalStorage>(sp => new TSettingsInLocalStorage(sp.GetRequiredService<TProtectedStorageService>()));
 
 await builder.Build().RunAsync();

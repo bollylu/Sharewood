@@ -11,8 +11,8 @@ builder.Services
   .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<TProtectedStorageService>();
-builder.Services.AddScoped<TSettingsLocalStorage>(sp =>
-  new TSettingsLocalStorage(sp.GetRequiredService<TProtectedStorageService>())
+builder.Services.AddScoped<TSettingsInLocalStorage>(sp =>
+  new TSettingsInLocalStorage(sp.GetRequiredService<TProtectedStorageService>())
 );
 
 var app = builder.Build();

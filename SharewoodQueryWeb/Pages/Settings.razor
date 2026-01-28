@@ -2,107 +2,86 @@
 @using System.ComponentModel.DataAnnotations
 @using SharewoodQueryLib
 
-@inject TSettingsLocalStorage Data
+@inject TSettingsInLocalStorage Storage
 
 <h3>Settings</h3>
 
-@if (EditData == null) {
-  <p>
-    <em> Loading...</em>
-  </p>
-} else {
+<EditForm Model="EditData" OnValidSubmit="SaveSettings" FormName="EditSettings">
+  <DataAnnotationsValidator />
+  <ValidationSummary />
+  <div class="mb-3">
 
-    <EditForm Model="EditData" OnValidSubmit="SaveSettings" FormName="EditSettings">
-      <DataAnnotationsValidator />
-      <ValidationSummary />
-      <div class="mb-3">
+    <label for="urlInput" class="form-label fw-bold">Sharewood Url</label>
+    <InputText id="urlInput" class="form-control" @bind-Value="EditData.SharewoodUrl" />
 
-        <label for="urlInput" class="form-label fw-bold">Sharewood Url</label>
-        <InputText id="urlInput" class="form-control" @bind-Value="EditData!.SharewoodUrl" />
+    <label for="apiKeyInput" class="form-label fw-bold">Sharewood API key</label>
+    <InputText id="apiKeyInput" class="form-control" @bind-Value="EditData.ApiKey" />
 
-        <label for="apiKeyInput" class="form-label fw-bold">Sharewood API key</label>
-        <InputText id="apiKeyInput" class="form-control" @bind-Value="EditData!.ApiKey" />
+    <label for="limitInput" class="form-label fw-bold">Torrents Limit</label>
+    <InputNumber id="limitInput" class="form-control" @bind-Value="EditData.TorrentsLimit" />
 
-        <label for="limitInput" class="form-label fw-bold">Torrents Limit</label>
-        <InputNumber id="limitInput" class="form-control" @bind-Value="EditData!.TorrentsLimit" />
+    <label for="autoRefreshInput" class="form-label fw-bold">Auto Refresh</label>
+    <InputCheckbox id="autoRefreshInput" class="form-check-input" @bind-Value="EditData.AutoRefresh" />
+    <br />
 
-        <label for="autoRefreshInput" class="form-label fw-bold">Auto Refresh</label>
-        <InputCheckbox id="autoRefreshInput" class="form-check-input" @bind-Value="EditData!.AutoRefresh" />
-        <br />
+    <label for="refreshDelayInput" class="form-label fw-bold">Refresh Delay (seconds)</label>
+    <InputNumber id="refreshDelayInput" class="form-control" @bind-Value="EditData.RefreshIntervalInSec" />
 
-        <label for="refreshDelayInput" class="form-label fw-bold">Refresh Delay (seconds)</label>
-        <InputNumber id="refreshDelayInput" class="form-control" @bind-Value="EditData!.RefreshIntervalInSec" />
+    <label for="defaultCategoryInput" class="form-label fw-bold">Default Category</label>
+    <select id="defaultCategoryInput"
+            class="form-select"
+            @onchange="onCategorySelected">
+      @foreach (ESharewoodCategory category in Enum.GetValues<ESharewoodCategory>()) {
+        if (category == EditData!.DefaultCategory) {
+          <option value="@category" selected>@category.ToString()</option>
+        } else {
+          <option value="@category">@category.ToString()</option>
+        }
+      }
+    </select>
 
-        <label for="defaultCategoryInput" class="form-label fw-bold">Default Category</label>
-        <select id="defaultCategoryInput"
-                class="form-select"
-                @onchange="onCategorySelected">
-          @foreach (ESharewoodCategory category in Enum.GetValues<ESharewoodCategory>()) {
-            if (category == EditData!.DefaultCategory) {
-              <option value="@category" selected>@category.ToString()</option>
-            } else {
-              <option value="@category">@category.ToString()</option>
-            }
-          }
-        </select>
+    <label for="defaultSubCategoryInput" class="form-label fw-bold">Default SubCategory</label>
+    <select id="defaultSubCategoryInput" class="form-select" @onchange="onSubCategorySelected">
+      <option value="@ESharewoodSubCategory.None.ToString()">None</option>
+      @foreach (ESharewoodSubCategory subcategory in EditData.DefaultCategory.GetSubCategories()) {
+        if (subcategory == EditData.DefaultSubCategory) {
+          <option value="@subcategory" selected>@subcategory.ToString().After(EditData.DefaultCategory.ToString())</option>
+        } else {
+          <option value="@subcategory">@subcategory.ToString().After(EditData.DefaultCategory.ToString())</option>
+        }
+      }
+    </select>
 
-        <label for="defaultSubCategoryInput" class="form-label fw-bold">Default SubCategory</label>
-        <select id="defaultSubCategoryInput" class="form-select" @onchange="onSubCategorySelected">
-          <option value="@ESharewoodSubCategory.None.ToString()">None</option>
-          @foreach (ESharewoodSubCategory subcategory in SubCategoriesForCategory(EditData!.DefaultCategory)) {
-            if (subcategory == EditData.DefaultSubCategory) {
-              <option value="@subcategory" selected>@subcategory.ToString().After(EditData!.DefaultCategory.ToString())</option>
-            } else {
-              <option value="@subcategory">@subcategory.ToString().After(EditData!.DefaultCategory.ToString())</option>
-            }
-          }
-        </select>
+  </div>
 
-      </div>
-      <button type="submit" class="btn btn-primary" disabled="@NoNeedToSave">Save Settings</button>
+  <button type="submit" class="btn btn-primary" disabled="@NoNeedToSave">Save Settings</button>
 
-    </EditForm>
-}
+</EditForm>
+
 @code {
 
-  private TSettingsLocalStorage? OriginalData;
-  private TSettingsLocalStorage? EditData;
+  private TSettings OriginalData = new TSettings();
+  private TSettings EditData = new TSettings();
 
-  private IEnumerable<ESharewoodSubCategory> SubCategories { get; set; } = Enumerable.Empty<ESharewoodSubCategory>();
-  public bool NoNeedToSave => EditData?.Equals(OriginalData) ?? true;
+  public bool NoNeedToSave => EditData.Equals(OriginalData);
 
-  protected override async Task OnParametersSetAsync() {
-    await Data.ReadAsync();
-    EditData = new TSettingsLocalStorage(Data);
-    OriginalData = new TSettingsLocalStorage(Data);
-    await base.OnParametersSetAsync();
+  protected override async Task OnInitializedAsync() {
+    ISettings? Data = await Storage.ReadAsync();
+    if (Data is TSettings SettingsData) {
+      EditData = new TSettings(SettingsData);
+      OriginalData = new TSettings(SettingsData);
+    }
   }
-
-  // protected override async Task OnInitializedAsync() {
-
-  // }
 
   private async Task SaveSettings() {
-    await EditData!.SaveAsync();
-    OriginalData = new TSettingsLocalStorage(EditData);
+    await Storage.SaveAsync(EditData);
+    OriginalData = new TSettings(EditData);
     StateHasChanged();
-  }
-
-  private IEnumerable<ESharewoodSubCategory> SubCategoriesForCategory(ESharewoodCategory category) {
-    return Enum.GetValues<ESharewoodSubCategory>()
-    .Where(subcategory => subcategory.ToString().StartsWith(category.ToString()));
   }
 
   private void onCategorySelected(ChangeEventArgs e) {
     if (e.Value is string Category && EditData != null) {
       EditData.DefaultCategory = Enum.Parse<ESharewoodCategory>(Category);
-      SubCategories = SubCategoriesForCategory(EditData.DefaultCategory);
-      if (SubCategories.Any()) {
-        EditData.DefaultSubCategory = SubCategories.First();
-      } else {
-        EditData.DefaultSubCategory = default!;
-      }
-
       StateHasChanged();
     }
   }
@@ -110,8 +89,8 @@
   private void onSubCategorySelected(ChangeEventArgs e) {
     if (e.Value is string subCategory && EditData != null) {
       EditData.DefaultSubCategory = Enum.Parse<ESharewoodSubCategory>(subCategory);
+      StateHasChanged();
     }
-    StateHasChanged();
   }
 
 }
